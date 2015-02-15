@@ -1,81 +1,152 @@
 /*
-  Blink
-  Turns on an LED on for one second, then off for one second, repeatedly.
- 
-  This example code is in the public domain.
+  Robot Awesome
+  
+  Makes awesome happen
  */
- 
-// Pin 13 has an LED connected on most Arduino boards.
-// give it a name:
-int leftMotorFwd = 5;
-int rightMotorFwd = 4;
+int leftMotorEnable = 5;
+int leftMotorFwd = 6;
 int leftMotorBkwd = 7;
-int rightMotorBkwd = 6;
+
+int rightMotorEnable = 8;
+int rightMotorFwd = 9;
+int rightMotorBkwd = 10;
+
+boolean interruptStopped = false; 
+boolean shouldMove = false;
+
 int i = 0;
-int runs = 4;
+int runs = 20;
 
 // the setup routine runs once when you press reset:
 void setup() {                
   // initialize the digital pin as an output.
   pinMode(leftMotorFwd, OUTPUT);
-  pinMode(rightMotorFwd, OUTPUT);  
-    pinMode(leftMotorBkwd, OUTPUT);
-  pinMode(rightMotorBkwd, OUTPUT);  
+  pinMode(rightMotorFwd, OUTPUT);
+  pinMode(leftMotorBkwd, OUTPUT);
+  pinMode(rightMotorBkwd, OUTPUT);
+  pinMode(leftMotorEnable, OUTPUT);
+  pinMode(rightMotorEnable, OUTPUT);
+  digitalWrite(2, HIGH);
+  digitalWrite(3, HIGH);
+  attachInterrupt(0, leftMotorInterrupt, RISING);
+  attachInterrupt(1, rightMotorInterrupt, RISING);
 
 }
 
 // the loop routine runs over and over again forever:
 void loop() {
+  resetAll();
   while (i<runs) {
-    driveForward();
-    turnHardLeft90();               // wait for a second    
+    driveForward(1000);
     i++;
   }
 }
 
-void driveForward(){
-  digitalWrite(leftMotorFwd, HIGH);   // turn the left Motor On (HIGH is the voltage level)   
-  digitalWrite(rightMotorFwd, HIGH);   // turn the right Motor On (HIGH is the voltage level)  
-  digitalWrite(leftMotorBkwd, LOW);   // turn the left Motor On (HIGH is the voltage level)   
-  digitalWrite(rightMotorBkwd, LOW);   // turn the right Motor On (HIGH is the voltage level)  
-  delay(3000);
-  stopMotors();
+void leftMotorInterrupt() {
+  if (!shouldMove) {
+    return;
+  }
+  if (interruptStopped) {
+    digitalWrite(leftMotorEnable, HIGH);
+  } else {
+    digitalWrite(rightMotorEnable, LOW);
+  }
+  interruptStopped = !interruptStopped;
+}
+void rightMotorInterrupt() {
+  if (!shouldMove) {
+    return;
+  }
+  if (interruptStopped) {
+    digitalWrite(rightMotorEnable, HIGH);
+  } else {
+    digitalWrite(leftMotorEnable, LOW);
+  }
+  interruptStopped = !interruptStopped;
 }
 
-void driveBackward(){
-  digitalWrite(leftMotorBkwd, HIGH);   // turn the left Motor On (HIGH is the voltage level)   
-  digitalWrite(rightMotorBkwd, HIGH);   // turn the right Motor On (HIGH is the voltage level)  
-  digitalWrite(leftMotorFwd, LOW);   // turn the left Motor On (HIGH is the voltage level)   
-  digitalWrite(rightMotorFwd, LOW);   // turn the right Motor On (HIGH is the voltage level)  
-
+void driveForward(int time){
+  leftForward();
+  rightForward();
+  startBoth();
+  
+  delay(time);
+  resetAll();
 }
 
-void turnLeft90(){
-  digitalWrite(leftMotorFwd, LOW);   // turn the left Motor On (HIGH is the voltage level)   
-  digitalWrite(rightMotorFwd, HIGH);   // turn the right Motor On (HIGH is the voltage level)   
-  digitalWrite(leftMotorBkwd, LOW);   // turn the left Motor On (HIGH is the voltage level)   
-  digitalWrite(rightMotorBkwd, LOW);   // turn the right Motor On (HIGH is the voltage level) 
-  delay(2000);
-  stopMotors(); 
-
+void driveBackward(int time){
+  leftBack();
+  rightBack();
+  startBoth();
+  
+  delay(time);
+  resetAll();
 }
 
-void turnHardLeft90(){
-  digitalWrite(leftMotorFwd, LOW);   // turn the left Motor On (HIGH is the voltage level)   
-  digitalWrite(rightMotorFwd, HIGH);   // turn the right Motor On (HIGH is the voltage level)   
-  digitalWrite(leftMotorBkwd, HIGH);   // turn the left Motor On (HIGH is the voltage level)   
-  digitalWrite(rightMotorBkwd, LOW);   // turn the right Motor On (HIGH is the voltage level)  
+void turnHardLeft90() {
+  leftBack();
+  rightForward();
 
+  startBoth();
   delay(1250);
-  stopMotors();
+  resetAll();
+}
+void turnHardRight90() {
+  leftForward();
+  rightBack();
+
+  startBoth();
+  delay(1250);
+  resetAll();
 }
 
-void stopMotors(){
-   digitalWrite(leftMotorFwd, LOW);   // turn the left Motor On (HIGH is the voltage level)   
-   digitalWrite(rightMotorFwd, LOW);   // turn the right Motor On (HIGH is the voltage level)   
-   digitalWrite(leftMotorBkwd, LOW);   // turn the left Motor On (HIGH is the voltage level)   
-   digitalWrite(rightMotorBkwd, LOW);   // turn the right Motor On (HIGH is the voltage level)   
-
+void rightForward() {
+  digitalWrite(rightMotorFwd, HIGH);
+  digitalWrite(rightMotorBkwd, LOW);
 }
+void rightBack() {
+  digitalWrite(rightMotorBkwd, HIGH);
+  digitalWrite(rightMotorFwd, LOW);
+}
+void stopRight() {
+  digitalWrite(rightMotorEnable, LOW);
+}
+void startRight() {
+  digitalWrite(rightMotorEnable, HIGH);
+}
+
+void leftForward() {
+  digitalWrite(leftMotorFwd, HIGH);
+  digitalWrite(leftMotorBkwd, LOW);
+}
+void leftBack() {
+  digitalWrite(leftMotorBkwd, HIGH);
+  digitalWrite(leftMotorFwd, LOW);
+}
+void stopLeft() {
+  digitalWrite(leftMotorEnable, LOW);
+}
+void startLeft() {
+  digitalWrite(leftMotorEnable, HIGH);
+}
+void resetAll() {
+  stopBoth();
+  digitalWrite(leftMotorFwd, LOW);
+  digitalWrite(leftMotorBkwd, LOW);
+  digitalWrite(rightMotorFwd, LOW);
+  digitalWrite(rightMotorBkwd, LOW);
+}
+
+void stopBoth() {
+   shouldMove = false;
+   stopLeft();
+   stopRight();
+}
+void startBoth() {
+  shouldMove = true;
+  startLeft();
+  startRight();
+}
+
 
 

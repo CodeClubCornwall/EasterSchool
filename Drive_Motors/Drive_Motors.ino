@@ -3,7 +3,7 @@
   
   Makes awesome happen
  */
-const int REVS_PER_METRE = 518;
+const float REVS_PER_METRE = 518;
 
 int leftMotorEnable = 5;
 int leftMotorFwd = 6;
@@ -19,6 +19,8 @@ boolean shouldMove = false;
 int runs = 1;
 
 int revolutions = 0;
+int revolutionsLeft = 0;
+int revolutionsRight = 0;
 
 // the setup routine runs once when you press reset:
 void setup() {                
@@ -40,13 +42,25 @@ void setup() {
 void loop() {
   resetAll();
   while (runs > 0) {
-    driveForward(100);
+//driveForward(100);
+    turnHardLeft(14);
+    delay(5000);
+    turnHardLeft(13);
+    delay(5000);
+    turnHardLeft(12);
+    delay(5000);
+    turnHardLeft(11);
+    delay(5000);
+    turnHardLeft(10);
+    delay(5000);
     runs--;
   }
 }
 
 void leftMotorInterrupt() {
-  if (!shouldMove) {
+  revolutions--;
+  revolutionsLeft--;
+    if (!shouldMove) {
     return;
   }
   if (interruptStopped) {
@@ -55,9 +69,10 @@ void leftMotorInterrupt() {
     digitalWrite(rightMotorEnable, LOW);
   }
   interruptStopped = !interruptStopped;
-  revolutions--;
 }
 void rightMotorInterrupt() {
+  revolutions--;
+  revolutionsRight--;
   if (!shouldMove) {
     return;
   }
@@ -67,10 +82,10 @@ void rightMotorInterrupt() {
     digitalWrite(leftMotorEnable, LOW);
   }
   interruptStopped = !interruptStopped;
-  revolutions--;
+
 }
 
-void driveForward(int cm){
+void driveForward(float cm){
   
   revolutions = (REVS_PER_METRE * (cm / 100) *2);
   while (revolutions > 0) {
@@ -93,6 +108,28 @@ void driveBackward(int time){
   delay(time);
   shouldMove = false;
   resetAll();
+}
+
+void turnHardLeft(float cm) {
+  revolutionsLeft = (REVS_PER_METRE * (cm / 100));
+  revolutionsRight = revolutionsLeft;
+  while (revolutionsLeft > 0 || revolutionsRight > 0) {
+    if (revolutionsLeft > 0) {
+      leftBack();
+    } else {
+      stopLeft();
+    }
+    if (revolutionsRight > 0) {
+      rightForward();
+    } else {
+      stopRight();
+    }
+    
+    startBoth();
+  }
+  
+  resetAll();
+
 }
 
 void turnHardLeft90() {

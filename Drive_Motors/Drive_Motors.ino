@@ -3,6 +3,8 @@
   
   Makes awesome happen
  */
+const int REVS_PER_METRE = 518;
+
 int leftMotorEnable = 5;
 int leftMotorFwd = 6;
 int leftMotorBkwd = 7;
@@ -14,8 +16,9 @@ int rightMotorBkwd = 10;
 boolean interruptStopped = false; 
 boolean shouldMove = false;
 
-int i = 0;
-int runs = 20;
+int runs = 1;
+
+int revolutions = 0;
 
 // the setup routine runs once when you press reset:
 void setup() {                
@@ -36,9 +39,9 @@ void setup() {
 // the loop routine runs over and over again forever:
 void loop() {
   resetAll();
-  while (i<runs) {
-    driveForward(1000);
-    i++;
+  while (runs > 0) {
+    driveForward(100);
+    runs--;
   }
 }
 
@@ -52,6 +55,7 @@ void leftMotorInterrupt() {
     digitalWrite(rightMotorEnable, LOW);
   }
   interruptStopped = !interruptStopped;
+  revolutions--;
 }
 void rightMotorInterrupt() {
   if (!shouldMove) {
@@ -63,23 +67,31 @@ void rightMotorInterrupt() {
     digitalWrite(leftMotorEnable, LOW);
   }
   interruptStopped = !interruptStopped;
+  revolutions--;
 }
 
-void driveForward(int time){
-  leftForward();
-  rightForward();
-  startBoth();
+void driveForward(int cm){
   
-  delay(time);
+  revolutions = (REVS_PER_METRE * (cm / 100) *2);
+  while (revolutions > 0) {
+    leftForward();
+    rightForward();
+    shouldMove = true;
+    startBoth();
+  }  
+  
+  shouldMove = false;
   resetAll();
 }
 
 void driveBackward(int time){
   leftBack();
   rightBack();
+  shouldMove = true;
   startBoth();
   
   delay(time);
+  shouldMove = false;
   resetAll();
 }
 
@@ -138,12 +150,10 @@ void resetAll() {
 }
 
 void stopBoth() {
-   shouldMove = false;
    stopLeft();
    stopRight();
 }
 void startBoth() {
-  shouldMove = true;
   startLeft();
   startRight();
 }

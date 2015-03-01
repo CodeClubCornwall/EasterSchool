@@ -1,9 +1,11 @@
+#include <NewPing.h>
+
 /*
   Robot Awesome
   
   Makes awesome happen
  */
-const float REVS_PER_METRE = 518;
+const float REVS_PER_METRE = 518.00;
 
 #define leftMotorFeedback 2
 #define leftMotorEnable 9
@@ -15,14 +17,20 @@ const float REVS_PER_METRE = 518;
 #define rightMotorIN4 11
 #define rightMotorIN3 12
 
+#define FORWARD_TRIGGER_PIN  4  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define FORWARD_ECHO_PIN     5  // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define FORWARD_MAX_DISTANCE 20 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
+
+NewPing forwardSonar(FORWARD_TRIGGER_PIN, FORWARD_ECHO_PIN, FORWARD_MAX_DISTANCE); // NewPing setup of pins and maximum distance.
+
 boolean interruptStopped = false; 
 boolean shouldMove = false;
 
-int runs = 1;
+int runs = 4;
 
-int revolutions = 0;
-int revolutionsLeft = 0;
-int revolutionsRight = 0;
+volatile int revolutions = 0;
+volatile int revolutionsLeft = 0;
+volatile int revolutionsRight = 0;
 
 // the setup routine runs once when you press reset:
 void setup() {                
@@ -43,13 +51,13 @@ void setup() {
 // the loop routine runs over and over again forever:
 void loop() {
   resetAll();
-  runs = 4;
+  
   while (runs > 0) {
     driveForward_cms(100);    
-    turnHardLeft(9);
+    turnHardLeft(8.2);
     runs--;
   }
-  turnHardLeft(36);
+  
 }
 
 void processLeftMotorInterrupt() {
@@ -59,9 +67,11 @@ void processLeftMotorInterrupt() {
     return;
   }
   if (interruptStopped) {
-    digitalWrite(leftMotorEnable, HIGH);
+    digitalWrite(rightMotorEnable, HIGH);
+    digitalWrite(leftMotorEnable, HIGH); 
   } else {
-    digitalWrite(rightMotorEnable, LOW);
+    digitalWrite(leftMotorEnable, LOW);
+    digitalWrite(rightMotorEnable, HIGH);
   }
   interruptStopped = !interruptStopped;
 }
@@ -72,9 +82,11 @@ void processRightMotorInterrupt() {
     return;
   }
   if (interruptStopped) {
+    digitalWrite(leftMotorEnable, HIGH);
     digitalWrite(rightMotorEnable, HIGH);
   } else {
-    digitalWrite(leftMotorEnable, LOW);
+    digitalWrite(rightMotorEnable, LOW);
+    digitalWrite(leftMotorEnable, HIGH);
   }
   interruptStopped = !interruptStopped;
 
@@ -87,21 +99,31 @@ void driveForward_cms(float cm){
   leftForward();
   rightForward();
   shouldMove = true;
-  startBoth();
+  enableBoth();
   
   while (revolutions > 0) {
-
+    stopIfObstacleCloserThan_cm(10);
   }  
   
   shouldMove = false;
   resetAll();
 }
 
+void stopIfObstacleCloserThan_cm(float cm){
+  unsigned int uS = forwardSonar.ping();
+  unsigned int distance = uS / US_ROUNDTRIP_CM;
+  if(distance>0 && distance<=cm)
+  {
+    revolutions=0;    
+    resetAll();
+  }
+}
+
 void driveBackward_seconds(int time){
   leftBack();
   rightBack();
   shouldMove = true;
-  startBoth();
+  enableBoth();
   
   delay(time);
   shouldMove = false;
@@ -109,8 +131,12 @@ void driveBackward_seconds(int time){
 }
 
 void turnHardLeft(float cm) {
-  revolutionsLeft = (REVS_PER_METRE * (cm / 100));
+  revolutionsLeft = (REVS_PER_METRE * (cm / 100.00));
   revolutionsRight = revolutionsLeft;
+  leftBack();
+  rightForward();
+  enableBoth();
+  
   while (revolutionsLeft > 0 || revolutionsRight > 0) {
     if (revolutionsLeft > 0) {
       leftBack();
@@ -122,8 +148,7 @@ void turnHardLeft(float cm) {
     } else {
       stopRight();
     }
-    
-    startBoth();
+
   }
   
   resetAll();
@@ -134,7 +159,7 @@ void turnHardLeft90() {
   leftBack();
   rightForward();
 
-  startBoth();
+  enableBoth();
   delay(1250);
   resetAll();
 }
@@ -142,7 +167,7 @@ void turnHardRight90() {
   leftForward();
   rightBack();
 
-  startBoth();
+  enableBoth();
   delay(1250);
   resetAll();
 }
@@ -157,8 +182,10 @@ void rightBack() {
 }
 void stopRight() {
   digitalWrite(rightMotorEnable, LOW);
+  digitalWrite(rightMotorIN3, LOW);
+  digitalWrite(rightMotorIN4, LOW);
 }
-void startRight() {
+void enableRight() {
   digitalWrite(rightMotorEnable, HIGH);
 }
 
@@ -166,31 +193,31 @@ void leftForward() {
   digitalWrite(leftMotorIN1, HIGH);
   digitalWrite(leftMotorIN2, LOW);
 }
+
 void leftBack() {
   digitalWrite(leftMotorIN2, HIGH);
   digitalWrite(leftMotorIN1, LOW);
 }
+
 void stopLeft() {
   digitalWrite(leftMotorEnable, LOW);
-}
-void startLeft() {
-  digitalWrite(leftMotorEnable, HIGH);
-}
-void resetAll() {
-  stopBoth();
   digitalWrite(leftMotorIN1, LOW);
   digitalWrite(leftMotorIN2, LOW);
-  digitalWrite(rightMotorIN3, LOW);
-  digitalWrite(rightMotorIN4, LOW);
 }
 
-void stopBoth() {
+void enableLeft() {
+  digitalWrite(leftMotorEnable, HIGH);
+}
+
+void resetAll() {
    stopLeft();
    stopRight();
+   delay(1000);
 }
-void startBoth() {
-  startLeft();
-  startRight();
+
+void enableBoth() {
+  enableLeft();
+  enableRight();
 }
 
 

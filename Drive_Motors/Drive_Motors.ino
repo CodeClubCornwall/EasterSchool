@@ -5,13 +5,15 @@
  */
 const float REVS_PER_METRE = 518;
 
-int leftMotorEnable = 5;
-int leftMotorFwd = 6;
-int leftMotorBkwd = 7;
+#define leftMotorFeedback 2
+#define leftMotorEnable 9
+#define leftMotorIN1 8
+#define leftMotorIN2 7
 
-int rightMotorEnable = 8;
-int rightMotorFwd = 9;
-int rightMotorBkwd = 10;
+#define rightMotorFeedback 3
+#define rightMotorEnable 10
+#define rightMotorIN4 11
+#define rightMotorIN3 12
 
 boolean interruptStopped = false; 
 boolean shouldMove = false;
@@ -25,39 +27,32 @@ int revolutionsRight = 0;
 // the setup routine runs once when you press reset:
 void setup() {                
   // initialize the digital pin as an output.
-  pinMode(leftMotorFwd, OUTPUT);
-  pinMode(rightMotorFwd, OUTPUT);
-  pinMode(leftMotorBkwd, OUTPUT);
-  pinMode(rightMotorBkwd, OUTPUT);
+  pinMode(leftMotorIN1, OUTPUT);
+  pinMode(leftMotorIN2, OUTPUT);
+  pinMode(rightMotorIN3, OUTPUT);
+  pinMode(rightMotorIN4, OUTPUT);
   pinMode(leftMotorEnable, OUTPUT);
   pinMode(rightMotorEnable, OUTPUT);
-  digitalWrite(2, HIGH);
-  digitalWrite(3, HIGH);
-  attachInterrupt(0, leftMotorInterrupt, RISING);
-  attachInterrupt(1, rightMotorInterrupt, RISING);
+  digitalWrite(rightMotorFeedback, HIGH);
+  digitalWrite(leftMotorFeedback, HIGH);
+  attachInterrupt(0, processLeftMotorInterrupt, RISING);
+  attachInterrupt(1, processRightMotorInterrupt, RISING);
 
 }
 
 // the loop routine runs over and over again forever:
 void loop() {
   resetAll();
+  runs = 4;
   while (runs > 0) {
-//driveForward(100);
-    turnHardLeft(14);
-    delay(5000);
-    turnHardLeft(13);
-    delay(5000);
-    turnHardLeft(12);
-    delay(5000);
-    turnHardLeft(11);
-    delay(5000);
-    turnHardLeft(10);
-    delay(5000);
+    driveForward_cms(100);    
+    turnHardLeft(9);
     runs--;
   }
+  turnHardLeft(36);
 }
 
-void leftMotorInterrupt() {
+void processLeftMotorInterrupt() {
   revolutions--;
   revolutionsLeft--;
     if (!shouldMove) {
@@ -70,7 +65,7 @@ void leftMotorInterrupt() {
   }
   interruptStopped = !interruptStopped;
 }
-void rightMotorInterrupt() {
+void processRightMotorInterrupt() {
   revolutions--;
   revolutionsRight--;
   if (!shouldMove) {
@@ -85,21 +80,24 @@ void rightMotorInterrupt() {
 
 }
 
-void driveForward(float cm){
+void driveForward_cms(float cm){
   
   revolutions = (REVS_PER_METRE * (cm / 100) *2);
+    
+  leftForward();
+  rightForward();
+  shouldMove = true;
+  startBoth();
+  
   while (revolutions > 0) {
-    leftForward();
-    rightForward();
-    shouldMove = true;
-    startBoth();
+
   }  
   
   shouldMove = false;
   resetAll();
 }
 
-void driveBackward(int time){
+void driveBackward_seconds(int time){
   leftBack();
   rightBack();
   shouldMove = true;
@@ -150,12 +148,12 @@ void turnHardRight90() {
 }
 
 void rightForward() {
-  digitalWrite(rightMotorFwd, HIGH);
-  digitalWrite(rightMotorBkwd, LOW);
+  digitalWrite(rightMotorIN4, HIGH);
+  digitalWrite(rightMotorIN3, LOW);
 }
 void rightBack() {
-  digitalWrite(rightMotorBkwd, HIGH);
-  digitalWrite(rightMotorFwd, LOW);
+  digitalWrite(rightMotorIN3, HIGH);
+  digitalWrite(rightMotorIN4, LOW);
 }
 void stopRight() {
   digitalWrite(rightMotorEnable, LOW);
@@ -165,12 +163,12 @@ void startRight() {
 }
 
 void leftForward() {
-  digitalWrite(leftMotorFwd, HIGH);
-  digitalWrite(leftMotorBkwd, LOW);
+  digitalWrite(leftMotorIN1, HIGH);
+  digitalWrite(leftMotorIN2, LOW);
 }
 void leftBack() {
-  digitalWrite(leftMotorBkwd, HIGH);
-  digitalWrite(leftMotorFwd, LOW);
+  digitalWrite(leftMotorIN2, HIGH);
+  digitalWrite(leftMotorIN1, LOW);
 }
 void stopLeft() {
   digitalWrite(leftMotorEnable, LOW);
@@ -180,10 +178,10 @@ void startLeft() {
 }
 void resetAll() {
   stopBoth();
-  digitalWrite(leftMotorFwd, LOW);
-  digitalWrite(leftMotorBkwd, LOW);
-  digitalWrite(rightMotorFwd, LOW);
-  digitalWrite(rightMotorBkwd, LOW);
+  digitalWrite(leftMotorIN1, LOW);
+  digitalWrite(leftMotorIN2, LOW);
+  digitalWrite(rightMotorIN3, LOW);
+  digitalWrite(rightMotorIN4, LOW);
 }
 
 void stopBoth() {

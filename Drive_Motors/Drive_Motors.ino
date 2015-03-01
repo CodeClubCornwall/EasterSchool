@@ -21,16 +21,40 @@ const float REVS_PER_METRE = 518.00;
 #define FORWARD_ECHO_PIN     5  // Arduino pin tied to echo pin on the ultrasonic sensor.
 #define FORWARD_MAX_DISTANCE 20 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 
+
+#define sensorPinLeft A0    // select the input pin for the potentiometer
+#define sensorPinRight A1
+#define sensorPinMiddle A2
+
 NewPing forwardSonar(FORWARD_TRIGGER_PIN, FORWARD_ECHO_PIN, FORWARD_MAX_DISTANCE); // NewPing setup of pins and maximum distance.
 
 boolean interruptStopped = false; 
 boolean shouldMove = false;
 
-int runs = 4;
+int runs = 15;
 
 volatile int revolutions = 0;
 volatile int revolutionsLeft = 0;
 volatile int revolutionsRight = 0;
+
+
+int sensorValueLeft = 0;
+int sensorValueMiddle = 0;
+int sensorValueRight = 0;// variable to store the value coming from the sensor
+
+float leftAdjust;
+float rightAdjust;
+float middleAdjust;
+
+float leftCalibrated;
+float middleCalibrated;
+float rightCalibrated;
+
+float leftAdjustPercent;
+float middleAdjustPercent;
+float rightAdjustPercent;
+
+
 
 // the setup routine runs once when you press reset:
 void setup() {                
@@ -45,6 +69,12 @@ void setup() {
   digitalWrite(leftMotorFeedback, HIGH);
   attachInterrupt(0, processLeftMotorInterrupt, RISING);
   attachInterrupt(1, processRightMotorInterrupt, RISING);
+  
+  digitalWrite(sensorPinLeft, HIGH);
+  digitalWrite(sensorPinMiddle, HIGH);
+  digitalWrite(sensorPinRight, HIGH);
+
+  calibrateSensors();
 
 }
 
@@ -53,8 +83,9 @@ void loop() {
   resetAll();
   
   while (runs > 0) {
-    driveForward_cms(100);    
-    turnHardLeft(8.2);
+    followLight();
+    //driveForward_cms(100);    
+    //turnHardLeft(8.2);
     runs--;
   }
   
@@ -90,6 +121,53 @@ void processRightMotorInterrupt() {
   }
   interruptStopped = !interruptStopped;
 
+}
+
+void followLight()
+{
+  
+  
+  driveForward_cms(3);
+  
+  enableBoth();
+  while (!facingLight()) {
+    if (brighterRight()) {
+      turnRight();
+
+      //followLight();
+    } else {
+      turnLeft();
+      //followLight();
+    }
+  }
+  resetAll();
+  
+}
+
+boolean facingLight()
+{
+  sensorValueLeft = analogRead(sensorPinLeft);
+  sensorValueMiddle = analogRead(sensorPinMiddle);
+  sensorValueRight = analogRead(sensorPinRight);  
+
+  leftCalibrated = sensorValueLeft / leftAdjustPercent;
+  middleCalibrated = sensorValueMiddle / middleAdjustPercent;
+  rightCalibrated = sensorValueRight / rightAdjustPercent;
+
+  return (middleCalibrated < leftCalibrated && middleCalibrated < rightCalibrated);
+}
+
+boolean brighterRight()
+{
+  sensorValueLeft = analogRead(sensorPinLeft);
+  sensorValueMiddle = analogRead(sensorPinMiddle);
+  sensorValueRight = analogRead(sensorPinRight);  
+
+  leftCalibrated = sensorValueLeft / leftAdjustPercent;
+  middleCalibrated = sensorValueMiddle / middleAdjustPercent;
+  rightCalibrated = sensorValueRight / rightAdjustPercent;
+
+  return (rightCalibrated < leftCalibrated && rightCalibrated < middleCalibrated);
 }
 
 void driveForward_cms(float cm){
@@ -171,6 +249,14 @@ void turnHardRight90() {
   delay(1250);
   resetAll();
 }
+void turnLeft() {
+  rightForward();
+  leftBack(); 
+}
+void turnRight() {
+  leftForward();
+  rightBack(); 
+}
 
 void rightForward() {
   digitalWrite(rightMotorIN4, HIGH);
@@ -218,6 +304,32 @@ void resetAll() {
 void enableBoth() {
   enableLeft();
   enableRight();
+}
+
+void calibrateSensors() {
+  float leftTotal =0;
+  float middleTotal = 0;
+  float rightTotal=0; 
+  float combinedTotal = 0;
+ 
+  for (int i=20; i--; i>0) {
+    leftTotal += analogRead(sensorPinLeft);
+    middleTotal += analogRead(sensorPinMiddle);
+    rightTotal += analogRead(sensorPinRight);
+  }
+
+  leftAdjust = leftTotal/20.0;
+  middleAdjust = middleTotal/20.0;
+  rightAdjust = rightTotal/20.0;
+
+
+  combinedTotal = leftTotal + middleTotal + rightTotal;
+
+
+  leftAdjustPercent = leftTotal / combinedTotal;
+  middleAdjustPercent = middleTotal / combinedTotal;
+  rightAdjustPercent = rightTotal / combinedTotal;
+
 }
 
 

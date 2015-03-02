@@ -125,19 +125,14 @@ void processRightMotorInterrupt() {
 
 void followLight()
 {
-  
-  
   driveForward_cms(3);
   
   enableBoth();
   while (!facingLight()) {
     if (brighterRight()) {
       turnRight();
-
-      //followLight();
     } else {
       turnLeft();
-      //followLight();
     }
   }
   resetAll();
@@ -154,7 +149,7 @@ boolean facingLight()
   middleCalibrated = sensorValueMiddle / middleAdjustPercent;
   rightCalibrated = sensorValueRight / rightAdjustPercent;
 
-  return (middleCalibrated < leftCalibrated && middleCalibrated < rightCalibrated);
+  return (middleCalibrated <= leftCalibrated && middleCalibrated <= rightCalibrated);
 }
 
 boolean brighterRight()
@@ -167,7 +162,9 @@ boolean brighterRight()
   middleCalibrated = sensorValueMiddle / middleAdjustPercent;
   rightCalibrated = sensorValueRight / rightAdjustPercent;
 
-  return (rightCalibrated < leftCalibrated && rightCalibrated < middleCalibrated);
+  float rightCalibratedPlus = rightCalibrated + (rightCalibrated*0.1);
+
+  return rightCalibratedPlus < leftCalibrated && rightCalibratedPlus < middleCalibrated);
 }
 
 void driveForward_cms(float cm){

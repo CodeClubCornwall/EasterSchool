@@ -23,8 +23,8 @@ const float REVS_PER_METRE = 518.00;
 
 
 #define sensorPinLeft A0    // select the input pin for the potentiometer
-#define sensorPinRight A1
-#define sensorPinMiddle A2
+#define sensorPinRight A2
+#define sensorPinMiddle A1
 
 NewPing forwardSonar(FORWARD_TRIGGER_PIN, FORWARD_ECHO_PIN, FORWARD_MAX_DISTANCE); // NewPing setup of pins and maximum distance.
 
@@ -164,7 +164,7 @@ boolean brighterRight()
 
   float rightCalibratedPlus = rightCalibrated + (rightCalibrated*0.1);
 
-  return rightCalibratedPlus < leftCalibrated && rightCalibratedPlus < middleCalibrated);
+  return (rightCalibratedPlus < leftCalibrated && rightCalibratedPlus < middleCalibrated);
 }
 
 void driveForward_cms(float cm){
@@ -255,11 +255,11 @@ void turnRight() {
   rightBack(); 
 }
 
-void rightForward() {
+void rightBack() {
   digitalWrite(rightMotorIN4, HIGH);
   digitalWrite(rightMotorIN3, LOW);
 }
-void rightBack() {
+void rightForward() {
   digitalWrite(rightMotorIN3, HIGH);
   digitalWrite(rightMotorIN4, LOW);
 }

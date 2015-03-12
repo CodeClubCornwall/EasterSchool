@@ -338,12 +338,12 @@ void RPMTest() {
   rpmRight=0;
   forward(100); 
   delay(1000);
+  detachInterrupt(0);
+  detachInterrupt(1); 
   Serial.print("Left RPM : ");
   Serial.print(rpmLeft*30);
   Serial.print("  Right RPM : ");
   Serial.println(rpmRight*30);
-  detachInterrupt(0);
-  detachInterrupt(1);  
 }
 
 void leftMotorInterrupt() {

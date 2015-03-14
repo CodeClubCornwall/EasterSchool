@@ -9,15 +9,23 @@ Test Menu
 7. Light Detector Test
 8. Motor RPM Test
 
-f. Slow forward   F. Fast forward
-b. Slow reverse   B. Fast reverse
-l. Slow left      L. Fast left
-r. Slow right     R. Fast right
+f. Slow forward   
+F. Fast forward
+b. Slow reverse   
+B. Fast reverse
+l. Slow left      
+L. Fast left
+r. Slow right     
+R. Fast right
 
-S. Story 4        T. Story 5
-U. Story 6        V. Story 7
-W. Story 10       X. Story 11
-Y. Story 12       Z. Story 13
+S. Story 4        
+T. Story 5
+U. Story 6        
+V. Story 7
+W. Story 10       
+X. Story 11
+Y. Story 12       
+Z. Story 13
 
 SPACE to exit test and return to menu
 
@@ -33,10 +41,12 @@ Story 5:
 Story 5 Acceptance Criteria:
 	Given the code is deployed when the reset button is pressed the robot moves forwards for 10 seconds and stops and the robot has not veered more that 2cm from a straight line and the robot remains stopped
 
+
 Story 6:
 	As a robot I want to drive forward 2 meters and stop so that I can display accurate distance measurement
 Story 6 Acceptance Criteria:
 	Given the code is deployed when the reset button is pressed the robot moves forwards 2 meters and stops and remains stopped.
+
 
 Story 7:
 	As a robot I want to be able to move forward creating a square shape so that I can display accurate turning features

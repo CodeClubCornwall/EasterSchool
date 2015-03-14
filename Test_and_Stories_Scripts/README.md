@@ -24,6 +24,7 @@ SPACE to exit test and return to menu
 
 Story 4:
 	As a robot I want to move forward for 1 seconds, pause for 1 second and reverse for 1 seconds so that I can display basic motor control
+	
 Story 4 Acceptance Criteria:
 	Given the code is deployed when the reset button is pressed the robot moves forwards for 1 seconds, stops for 1 second and reverses for 1 seconds repeatedly.
 

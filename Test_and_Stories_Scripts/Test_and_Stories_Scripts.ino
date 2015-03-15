@@ -45,15 +45,13 @@
 #define PWM_SPEED 200 // use a number between 100 and 255
 
 #include <Wire.h>
-//#include <Servo.h>
+#include <Servo.h>
 #include <NewPing.h>
 
 char keypress=' ';
 
 volatile unsigned int rpmLeftCounter=0;    // max = 65535 = 126.515 meters
-volatile unsigned int rpmRightCounter=0;
-
-//Servo myservo;  // create servo object to control a servo 
+volatile unsigned int rpmRightCounter=0; 
 
 void setup() {
   Wire.begin();
@@ -66,8 +64,6 @@ void setup() {
   Wire.write(0x6B);  // PWR_MGMT_1 register
   Wire.write(0);     // set to zero (wakes up the MPU-6050)
   Wire.endTransmission();
-
-  //  myservo.attach(Servo_Pin);
 
   digitalWrite(Light_Sensor_Left_PUP,HIGH);
   digitalWrite(Light_Sensor_Middle_PUP,HIGH);
@@ -91,7 +87,7 @@ void displayMenu() {
   Serial.println("1. I2C Bus Scan");
   Serial.println("2. Gyro & ACC Test");
   Serial.println("3. Compass Test");
-  Serial.println("4. Servo Test - Not working as disables motor enable PWM");
+  Serial.println("4. Servo Test - Disables motor enable PWM");
   Serial.println("5. Ultrasonic Forward Test");
   Serial.println("6. Ultrasonic Down Test");
   Serial.println("7. Light Detector Test");
@@ -321,7 +317,9 @@ void MPU6050Test() {
 }
 
 void servoTest() {
-  /*  int pos = 0;
+   Servo myservo;  // create servo object to control a servo
+   myservo.attach(Servo_Pin);  // Disables interrupts preventing PWM motor enable control
+   int pos = 0;
    for(pos = 0; pos < 180; pos += 1)  // goes from 0 degrees to 180 degrees 
    {                                  // in steps of 1 degree 
    myservo.write(pos);              // tell servo to go to position in variable 'pos' 
@@ -331,7 +329,8 @@ void servoTest() {
    {                                
    myservo.write(pos);              // tell servo to go to position in variable 'pos' 
    delay(15);                       // waits 15ms for the servo to reach the position 
-   } */
+   }
+   myservo.detach();  // Doesn't free up interrupts to allow PWM motor enable control
 }
 
 void sonicForwardTest() {

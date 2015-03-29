@@ -41,7 +41,12 @@
 //  3. The speed used for PWM
 //  4. the robot chassis
 
-#define NINETY_DEG_TURN 75 // number of hall sensor clicks in 90 deg
+// For Chassis 1
+//#define NINETY_DEG_TURN 75 // number of hall sensor clicks in 90 deg
+//#define PWM_SPEED 200 // use a number between 100 and 255
+
+// For Chassis 2
+#define NINETY_DEG_TURN 55 // number of hall sensor clicks in 90 deg
 #define PWM_SPEED 200 // use a number between 100 and 255
 
 #include <Wire.h>

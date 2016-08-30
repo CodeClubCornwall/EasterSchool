@@ -8,6 +8,7 @@ Test Menu
 6. Ultrasonic Down Test
 7. Light Detector Test
 8. Motor RPM Test
+9. LED Test
 
 f. Slow forward	F. Fast forward
 b. Slow reverse	B. Fast reverse

@@ -17,13 +17,13 @@
 #define Right_Motor_IN4 11
 #define Right_Motor_IN3 12
 #define Ultrasonic_Down_Trigger 13
-#define Light_Sensor_Left_PUP 14
-#define Light_Sensor_Middle_PUP 15
-#define Light_Sensor_Right_PUP 16
+#define Right_LED 14
+#define Left_LED 15
+
 #define Ultrasonic_Down_Echo 17
 
-#define Light_Sensor_Left 0
-#define Light_Sensor_Middle 1
+#define Light_Sensor_Left 7
+#define Light_Sensor_Middle 6
 #define Light_Sensor_Right 2
 
 #define Compass_Address 0x1E  // I2C address of the compass IC (HMC5883)
@@ -69,12 +69,6 @@ void setup() {
   Wire.write(0x6B);  // PWR_MGMT_1 register
   Wire.write(0);     // set to zero (wakes up the MPU-6050)
   Wire.endTransmission();
-
-  digitalWrite(Light_Sensor_Left_PUP,HIGH);
-  digitalWrite(Light_Sensor_Middle_PUP,HIGH);
-  digitalWrite(Light_Sensor_Right_PUP,HIGH);
-  digitalWrite(Left_Motor_Feedback, HIGH);  // Enable pull up resistors for left  motor sensor input
-  digitalWrite(Right_Motor_Feedback, HIGH);  // Enable pull up resistors for right motor sensor input
   brakesOn(); 
   Serial.begin(115200);
   displayMenu();
@@ -96,7 +90,8 @@ void displayMenu() {
   Serial.println("5. Ultrasonic Forward Test");
   Serial.println("6. Ultrasonic Down Test");
   Serial.println("7. Light Detector Test");
-  Serial.println("8. Motor RPM Test"); 
+  Serial.println("8. Motor RPM Test");
+  Serial.println("9. LED Test"); 
   Serial.println("");
   Serial.println("f. Slow forward   F. Fast forward");
   Serial.println("b. Slow reverse   B. Fast reverse");
@@ -142,6 +137,9 @@ void checkForKeyPress() {
     break;
   case '8':
     RPMTest();
+    break;
+  case '9':
+    LEDTest();
     break;
   case 'f':
     forward(100);
@@ -485,6 +483,17 @@ void RPMTest() {
   detachInterrupt(1);  
 }
 
+void LEDTest() {
+  pinMode(Right_LED, OUTPUT);
+  pinMode(Left_LED, OUTPUT); 
+  digitalWrite(Right_LED,HIGH);
+  digitalWrite(Left_LED,HIGH);
+  delay(500);
+  digitalWrite(Right_LED,LOW);
+  digitalWrite(Left_LED,LOW);
+  delay(500);
+}
+
 void leftMotorInterrupt() {  // in and out as quickly as possible :-)
   rpmLeftCounter++; 
 }
@@ -607,4 +616,3 @@ void setupRPMSensors() {
   rpmLeftCounter=0;
   rpmRightCounter=0;
 }
-
